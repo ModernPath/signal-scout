@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools==75.2.0", "wheel==0.44.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "signalscout"
+version = "0.1.0"
+description = "Local SignalScout application core"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic==1.13.2",
+    "fastapi==0.139.2",
+    "psycopg[binary]==3.2.3",
+    "SQLAlchemy==2.0.35",
+    "starlette==1.7.0",
+    "uvicorn==0.30.6",
+]
+
+[project.optional-dependencies]
+test = ["httpx2==2.13.0", "pytest==9.1.1", "Flask==3.1.1"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+signalscout = ["static/*.html", "static/*.js"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

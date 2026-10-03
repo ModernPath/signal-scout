@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+"""Research one selected opportunity; return evidence without persisting it."""
+
+from __future__ import annotations
+
+import os
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from agent_cli import print_result, read_request
+from agent_env import make_store
+from intelligence_provider import GeminiProvider
+
+
+def run(request: dict, store, provider) -> dict:
+    id = request.get("opportunity_id")
+    if not isinstance(id, int) or id <= 0:
+        raise ValueError("opportunity_id must be positive")
+    opportunity = store.get_opportunity(id)
+    items = store.source_evidence(opportunity["evidence_source_item_ids"])
+    if not items:
+        raise ValueError("Opportunity has no source evidence")
+    return provider.research(opportunity, items)
+
+
+if __name__ == "__main__":
+    def action():
+        key = os.environ.get("GEMINI_API_KEY", "")
+        if not key:
+            raise RuntimeError("Research provider is unavailable; configure GEMINI_API_KEY")
+        return run(read_request(), make_store(), GeminiProvider(
+            key, model=os.environ.get("SIGNAL_INTELLIGENCE_MODEL", "gemini-2.5-flash")))
+
+    print_result(action)

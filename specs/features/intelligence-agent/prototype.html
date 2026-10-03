@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SignalScout Intelligence — proposed agent UI</title>
+  <style>
+    :root{font:15px/1.5 system-ui,sans-serif;color:#172b35;background:#f4f7f5}
+    *{box-sizing:border-box}body{margin:0}a{color:#176b5b}button{cursor:pointer}
+    .shell{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh}
+    aside{background:#123b39;color:#ecf7f1;padding:28px 20px}aside strong{font-size:20px;letter-spacing:-.04em}
+    nav{display:grid;gap:6px;margin-top:36px}nav a{color:#dcf0e8;text-decoration:none;padding:10px 12px;border-radius:9px}
+    nav a.active{background:#286a59;color:white}main{max-width:1440px;padding:32px 36px;width:100%}
+    .eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:800;color:#568276}
+    h1{font-size:34px;letter-spacing:-.05em;margin:3px 0 5px}h2{font-size:19px;margin:0 0 12px}h3{font-size:15px;margin:0 0 8px}
+    p{margin:0 0 12px;color:#49616a}.top{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:26px}
+    .button{display:inline-block;border:0;border-radius:9px;background:#147a61;color:white;font-weight:700;padding:11px 17px;text-decoration:none}
+    .layout{display:grid;grid-template-columns:minmax(260px,370px) minmax(0,1fr);gap:18px}
+    .panel{background:white;border:1px solid #dce8e2;border-radius:16px;box-shadow:0 4px 16px #163c3010;padding:20px}
+    .item{display:block;border:1px solid #dce8e2;border-radius:12px;padding:14px;margin-top:10px;color:inherit;text-decoration:none}
+    .item.selected{border-color:#23886e;background:#f1faf5}.item strong{display:block;font-size:16px}.meta{font-size:12px;color:#6c8284;margin-top:6px}
+    .score{float:right;background:#dff5ea;color:#116346;border-radius:20px;padding:3px 9px;font-size:13px;font-weight:800}
+    .detail-head{display:flex;align-items:start;justify-content:space-between;gap:14px}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:17px 0}
+    .metric{background:#f5f9f7;border-radius:9px;padding:11px}.metric b{font-size:19px;display:block}.metric span{font-size:11px;color:#59736f}
+    .answers{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.answer{border-top:2px solid #a9d6bf;padding-top:10px}
+    .divider{border-top:1px solid #e1ebe6;margin:21px 0}.evidence{padding:11px 13px;background:#f5f9f7;border-radius:9px;margin:9px 0}
+    .actions{display:flex;gap:9px;flex-wrap:wrap}.secondary{background:white;color:#176b5b;border:1px solid #84b9a6}
+    .tag{display:inline-block;font-size:11px;font-weight:700;border-radius:20px;padding:3px 8px;background:#e6f1ed;color:#2a6a58;margin-left:6px}
+    @media(max-width:900px){.shell{grid-template-columns:1fr}aside{padding:14px 20px}nav{display:flex;margin:10px 0 0;flex-wrap:wrap}main{padding:22px 16px}.layout{grid-template-columns:1fr}.answers{grid-template-columns:1fr}.top{align-items:start}.grid{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body><div class="shell"><aside><strong>SignalScout<br>Intelligence</strong><nav><a class="active" href="#">Opportunities</a><a href="#">Company context</a><a href="#">Agent chat</a></nav></aside>
+<main><div class="top"><div><div class="eyebrow">Independent agent · Phase 2</div><h1>Opportunities</h1><p>Related signals, ranked with evidence and your company point of view.</p></div><button class="button">Analyze signals</button></div>
+<div class="layout"><section class="panel"><h2>Ranked conversations <span class="tag">2 found</span></h2><a class="item selected" href="#"><span class="score">78</span><strong>Agent security toolkit gains traction</strong><div class="meta">3 signals · Web, GitHub · 2 hours ago</div></a><a class="item" href="#"><span class="score">52</span><strong>New AI hiring platform launch</strong><div class="meta">1 signal · Web · Yesterday</div></a></section>
+<section class="panel"><div class="detail-head"><div><div class="eyebrow">Opportunity 01</div><h2>Agent security toolkit gains traction</h2><p>Three related signals from two sources. Evidence is linked below.</p></div><span class="score">78</span></div>
+<div class="grid"><div class="metric"><b>88</b><span>Relevance</span></div><div class="metric"><b>76</b><span>Velocity</span></div><div class="metric"><b>62</b><span>Novelty</span></div><div class="metric"><b>84</b><span>Company POV fit</span></div></div>
+<div class="answers"><div class="answer"><h3>Why now?</h3><p>Recent mentions increased across two sources.</p></div><div class="answer"><h3>Why us?</h3><p>This connects to the company’s stated agent-security expertise.</p></div><div class="answer"><h3>What’s our angle?</h3><p>Focus on how teams verify agent actions, beyond a launch recap.</p></div></div>
+<div class="divider"></div><h3>Source evidence</h3><div class="evidence"><a href="#">Original source: toolkit release</a><span class="tag">Web</span></div><div class="evidence"><a href="#">Original source: repository discussion</a><span class="tag">GitHub</span></div>
+<div class="divider"></div><h3>Deeper research</h3><p>Research this selected opportunity to see supporting, conflicting, and missing evidence.</p><div class="actions"><button class="button secondary">Research topic</button><button class="button">Draft LinkedIn post</button><button class="button secondary">Draft X reply</button></div>
+</section></div></main></div></body></html>

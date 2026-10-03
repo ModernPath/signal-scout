@@ -1,0 +1,81 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const nodes=new Map();
+const node=selector=>{if(!nodes.has(selector))nodes.set(selector,{innerHTML:'',textContent:'',className:'',value:'',disabled:false,
+  classList:{add(){},remove(){}},addEventListener(){},querySelector(){return node('child');}});return nodes.get(selector);};
+const document={querySelector:node,querySelectorAll:()=>[],addEventListener(){}};
+const context=vm.createContext({document,setTimeout,clearTimeout,URL,window:{location:{hash:''},addEventListener(){},scrollTo(){}},navigator:{},console});
+vm.runInContext(fs.readFileSync('src/signalscout/static/app.js','utf8').replace(/initialize\(\);\s*$/,''),context);
+vm.runInContext(fs.readFileSync('src/signalscout/static/intelligence.js','utf8').replace(/initializeIntelligence\(\);\s*$/,''),context);
+assert.equal(vm.runInContext('typeof renderOpportunityDetail',context),'function');
+context.fixture={id:1,label:'<img src=x onerror=alert(1)>',signal_ids:[1,2],total:67,confidence:.75,
+ components:{relevance:80,velocity:null,novelty:65,pov_fit:40},why_now:'Current',why_us:'Fit',angle:'Fresh',reason:'Title match',
+ source_items:[{id:1,title:'<script>bad</script>',source_url:'javascript:alert(1)'}],prior_content_matches:[],research:null,drafts:[]};
+vm.runInContext('renderOpportunityDetail(fixture)',context);
+let html=node('#opportunity-detail').innerHTML;
+assert.match(html,/Unknown/);
+assert.match(html,/75% score coverage/);
+assert.doesNotMatch(html,/<img src=x|<script>bad|href="javascript:/);
+assert.match(html,/Complete research/);
+assert.doesNotMatch(html,/data-generate-draft/);
+context.fixture.research={id:1,status:'complete',summary:'Evidence',evidence:[{id:7,claim:'Verified',stance:'conflict',source_url:'https://example.com/evidence',retrieved_at:null}]};
+vm.runInContext('intelligenceStatus={provider_available:true,has_brief:true}; renderOpportunityDetail(fixture)',context);
+html=node('#opportunity-detail').innerHTML;
+assert.equal((html.match(/data-generate-draft=/g)||[]).length,4);
+assert.match(html,/conflict/);
+context.fixture.drafts=[{id:8,channel:'x',format:'post',text:'</textarea><script>bad</script>',evidence_ids:[7],evidence:context.fixture.research.evidence,created_at:null,research_run_id:1}];
+vm.runInContext('renderOpportunityDetail(fixture)',context);
+html=node('#opportunity-detail').innerHTML;
+assert.doesNotMatch(html,/<script>bad/);
+assert.match(html,/data-save-draft="8"/);
+assert.match(html,/https:\/\/example.com\/evidence/);
+assert.match(html,/maxlength="280"/);
+console.log('Intelligence UI rendering and action gates passed');
+vm.runInContext('intelligenceStatus={provider_available:true,has_brief:false,content_count:0,signal_count:0};renderIntelligenceGuidance()',context);
+assert.match(node('#intelligence-guidance').innerHTML,/data-view="monitoring"/);
+assert.match(node('#intelligence-guidance').innerHTML,/No signals/);
+vm.runInContext('opportunityData={run_id:1,analyzed_at:null,opportunities:[{...fixture,rank:1}]};renderOpportunities();intelligenceJobs=[{id:1,action:"analyze",status:"complete",result:{opportunity_count:1}}];renderIntelligenceJobs()',context);
+assert.match(node('#analysis-summary').textContent,/1 opportunity ·/);
+assert.match(node('#intelligence-job').textContent,/1 opportunity$/);
+vm.runInContext('renderOpportunityDetail(fixture)',context);
+assert.match(node('#opportunity-detail').innerHTML,/<summary[^>]*>Source evidence \(1\)/);
+async function checkRevisionFocus(){
+  context.fetch=async()=>({ok:true,json:async()=>({id:9})});
+  context.button={disabled:false,isConnected:true};
+  node('#draft-text-8').value='Edited reply';
+  node('#draft-text-9').focus=()=>{document.activeElement=node('#draft-text-9');};
+  vm.runInContext('selectedOpportunityId=1;selectOpportunity=async()=>{};',context);
+  await vm.runInContext('saveDraft(8,button)',context);
+  assert.equal(document.activeElement,node('#draft-text-9'));
+}
+checkRevisionFocus().catch(error=>{console.error(error);process.exitCode=1;});
+context.knowledgeFixture={mode:'hybrid',coverage:.5,hits:[{chunk_id:17,source_id:2,title:'<script>source</script>',passage:'Original <img src=x onerror=bad>',source_url:'javascript:bad',removed:false}]};
+let knowledgeHtml=vm.runInContext('knowledgeMarkup(knowledgeFixture)',context);
+assert.match(knowledgeHtml,/50%/);
+assert.match(knowledgeHtml,/Original &lt;img/);
+assert.doesNotMatch(knowledgeHtml,/<script>source|href="javascript:/);
+context.fixture.knowledge=context.knowledgeFixture;
+vm.runInContext('intelligenceStatus={provider_available:true,has_brief:true}',context);
+context.fixture.enrichment={result:{angle:'New angle',why_us:'Expertise',uncertainty:'Review',comparisons:[{chunk_id:17,verdict:'uncertain',prior_claim:'Earlier claim',difference:'Distinct question'}]},source_removed:false,stale:true};
+vm.runInContext('renderOpportunityDetail(fixture)',context);
+assert.match(node('#opportunity-detail').innerHTML,/data-refine-angle="1"/);
+assert.match(node('#opportunity-detail').innerHTML,/New angle/);
+assert.match(node('#opportunity-detail').innerHTML,/changed/);
+vm.runInContext('intelError(new Error("Search unavailable"));intelligenceJobs=[{id:42,action:"search",status:"running"}];renderIntelligenceJobs()',context);
+assert.equal(node('#knowledge-error').textContent,'Search unavailable');
+assert.match(node('#company-intelligence-job').textContent,/Knowledge search · running/);
+const retryButton={disabled:true};document.querySelectorAll=()=>[retryButton];
+vm.runInContext('intelligenceJobs=[];renderIntelligenceJobs()',context);
+assert.equal(retryButton.disabled,false);
+const restoredViews=[];context.restoredViews=restoredViews;
+vm.runInContext('switchView=view=>restoredViews.push(view)',context);
+for(const view of ['collection','monitoring','feed']){
+  context.window.location.hash='#'+view;
+  vm.runInContext('initializeIntelligence()',context);
+  assert.equal(restoredViews.at(-1),view,'Reload must restore the bookmarked screen');
+}
+context.agentSessionId=null;
+context.window.location.hash='#agent/51';
+vm.runInContext('initializeIntelligence()',context);
+assert.equal(context.agentSessionId,51,'Reload must restore the persisted agent conversation ID');

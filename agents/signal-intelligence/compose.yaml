@@ -1,0 +1,46 @@
+# Optional overlay: from the application root, run
+# docker compose -f compose.yaml -f agents/signal-intelligence/compose.yaml up --build -d agent-ui agent-api
+services:
+  agent-ui:
+    build: ./agents/signal-intelligence
+    environment:
+      DATABASE_URL: postgresql+psycopg://signalscout:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/signalscout
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      SIGNAL_INTELLIGENCE_MODEL: ${SIGNAL_INTELLIGENCE_MODEL:-gemini-2.5-flash}
+      KNOWLEDGE_SEMANTIC_ENABLED: "${KNOWLEDGE_SEMANTIC_ENABLED:-true}"
+      KNOWLEDGE_EMBEDDING_MODEL: "${KNOWLEDGE_EMBEDDING_MODEL:-gemini-embedding-2}"
+      AGENT_BIND_HOST: 0.0.0.0
+      AGENT_UI_PORT: 5013
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    command: ["python", "ui/app.py"]
+    ports:
+      - "127.0.0.1:${AGENT_UI_HOST_PORT:-5013}:5013"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5013/health', timeout=3)"]
+      interval: 10s
+      timeout: 4s
+      retries: 5
+
+  agent-api:
+    build: ./agents/signal-intelligence
+    environment:
+      DATABASE_URL: postgresql+psycopg://signalscout:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/signalscout
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      SIGNAL_INTELLIGENCE_MODEL: ${SIGNAL_INTELLIGENCE_MODEL:-gemini-2.5-flash}
+      KNOWLEDGE_SEMANTIC_ENABLED: "${KNOWLEDGE_SEMANTIC_ENABLED:-true}"
+      KNOWLEDGE_EMBEDDING_MODEL: "${KNOWLEDGE_EMBEDDING_MODEL:-gemini-embedding-2}"
+      AGENT_BIND_HOST: 0.0.0.0
+      AGENT_API_PORT: 8013
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    command: ["python", "api/main.py"]
+    ports:
+      - "127.0.0.1:${AGENT_API_HOST_PORT:-8013}:8013"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8013/health', timeout=3)"]
+      interval: 10s
+      timeout: 4s
+      retries: 5

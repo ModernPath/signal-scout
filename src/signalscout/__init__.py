@@ -1,0 +1,1 @@
+"""SignalScout application package."""

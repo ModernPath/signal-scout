@@ -1,0 +1,85 @@
+services:
+  db:
+    image: pgvector/pgvector:0.8.7-pg17@sha256:ac08538c6f8b9904c33c8224c5e5706dbe760aca29db1d096972b4052c22a75d
+    environment:
+      POSTGRES_USER: signalscout
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: signalscout
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U signalscout -d signalscout"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  migrate:
+    build: .
+    environment:
+      DATABASE_URL: &database_url postgresql+psycopg://signalscout:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/signalscout
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["sh", "-c", "alembic upgrade head && echo 'Migration complete'"]
+    restart: "no"
+
+  web:
+    build: .
+    environment:
+      DATABASE_URL: *database_url
+      KNOWLEDGE_SEMANTIC_ENABLED: "${KNOWLEDGE_SEMANTIC_ENABLED:-true}"
+      KNOWLEDGE_EMBEDDING_MODEL: "${KNOWLEDGE_EMBEDDING_MODEL:-gemini-embedding-2}"
+      INTELLIGENCE_PROVIDER_AVAILABLE: "${GEMINI_API_KEY:+true}"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:${WEB_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3)"]
+      interval: 5s
+      timeout: 4s
+      retries: 10
+
+  worker:
+    build: .
+    environment:
+      DATABASE_URL: *database_url
+      XAIGROK_API_KEY: ${XAIGROK_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      RSS_FEED_URLS: ${RSS_FEED_URLS:-}
+      REDDIT_APPROVED_ACCESS: ${REDDIT_APPROVED_ACCESS:-false}
+      REDDIT_CLIENT_ID: ${REDDIT_CLIENT_ID:-}
+      REDDIT_CLIENT_SECRET: ${REDDIT_CLIENT_SECRET:-}
+      REDDIT_USER_AGENT: ${REDDIT_USER_AGENT:-}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    command: ["python", "-m", "signalscout.worker"]
+    healthcheck:
+      test: ["CMD", "python", "-m", "signalscout.worker", "--check"]
+      interval: 10s
+      timeout: 4s
+      retries: 5
+
+  intelligence-worker:
+    build: .
+    environment:
+      DATABASE_URL: *database_url
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      SIGNAL_INTELLIGENCE_MODEL: ${SIGNAL_INTELLIGENCE_MODEL:-gemini-2.5-flash}
+      KNOWLEDGE_SEMANTIC_ENABLED: "${KNOWLEDGE_SEMANTIC_ENABLED:-true}"
+      KNOWLEDGE_EMBEDDING_MODEL: "${KNOWLEDGE_EMBEDDING_MODEL:-gemini-embedding-2}"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    command: ["python", "-m", "signalscout.intelligence_worker"]
+    healthcheck:
+      test: ["CMD", "python", "-m", "signalscout.intelligence_worker", "--check"]
+      interval: 10s
+      timeout: 4s
+      retries: 5
+
+volumes:
+  db_data:

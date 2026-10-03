@@ -1,0 +1,13 @@
+# Agent workspace implementation
+
+Reuse agent_chat_session/turn in shared PostgreSQL; migration 0012 adds chat action and session/turn/request-token foreign keys on intelligence_job plus sequenced tool activity events. Cascade job/event deletion with session/turn retention. API creates sessions, lists recent sessions, reads bounded turns/jobs/events, queues a validated user message atomically with its job, and deletes idle sessions. Existing active jobs remain globally serialized; submission UUID ensures durable idempotence.
+
+The worker calls a shared agent workspace orchestrator. It wraps existing intelligence_chat.build_tools service functions, applies typed argument/selection gates, captures real start/finish events, and presents bounded tool results to a stdlib Gemini REST function-call loop (no additional SDK dependency). Use at most eight tools and nine provider rounds with a total four-minute deadline, 30-second calls, capped response bytes and text. Offline routing supports read/analysis only; model failure after tool execution preserves evidence and reports interruption without replay.
+
+Event records contain action name, actual executor, safe status, bounded argument summary and typed artifact references, not prompts/private document excerpts. Polling main UI renders chat and activity independently, restores sessions via hash, and links artifacts to current existing application screens. Original source links pass existing safeExternalUrl escaping. Main static JS remains vanilla and cache-versioned. Provider keys remain in intelligence-worker; APIs never make provider calls.
+
+## Implemented bounds and decisions
+
+History exposed to the model is the last eight turns at 2,000 characters each; the composer accepts 4,000. Tool results are bounded to 14,000 serialized characters and opportunity listings to five records; oversized outputs are marked truncated. The action deadline is checked between operations: an already running provider/subagent retains its existing timeout. APIs return 30 recent sessions, 40 recent turns, 20 jobs and 160 activity records. All events remain persisted until session deletion/expiry. The main workspace REST adapter and original standalone SDK chat share service tools; existing independent interfaces keep their own adapter.
+
+Initial-screen routing restores the conversation ID before rendering; asynchronous UI requests ignore outdated responses. Explicit unpinning is preserved during polling. Reply text is escaped before limited bold formatting; arbitrary model Markdown links/HTML are not executed. Trusted saved-result cards provide navigation instead.

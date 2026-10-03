@@ -1,0 +1,3 @@
+[submodule "rag-example"]
+	path = rag-example
+	url = https://github.com/ModernPath/rag-example.git

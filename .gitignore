@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+.venv/
+.uv-cache/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.egg-info/
+
+# Local state and backups
+.DS_Store
+*.dump
+*.sqlite
+*.sqlite3
+**/memory/data/*
+!**/memory/data/.gitkeep

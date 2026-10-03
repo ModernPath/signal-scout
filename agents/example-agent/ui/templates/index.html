@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Notes — Example Agent{% endblock %}
+{% block content %}
+<h1>Notes</h1>
+
+<section class="card">
+  <h2>New note</h2>
+  <form method="post" action="{{ url_for('create_note') }}" id="note-form">
+    <label for="title">Title</label>
+    <input id="title" name="title" required maxlength="120" placeholder="Call Bob about the offer">
+    <label for="body">Details <span class="muted">(optional)</span></label>
+    <textarea id="body" name="body"></textarea>
+    <label for="tags">Tags <span class="muted">(comma-separated)</span></label>
+    <input id="tags" name="tags" placeholder="work, sales">
+    <p><button type="submit">Save note</button></p>
+  </form>
+</section>
+
+<section class="card">
+  <form method="get" action="{{ url_for('index') }}" class="row" role="search">
+    <input name="q" value="{{ query }}" placeholder="Search notes…" aria-label="Search notes">
+    {% if active_tag %}<input type="hidden" name="tag" value="{{ active_tag }}">{% endif %}
+    <button type="submit">Search</button>
+    {% if query or active_tag %}<a href="{{ url_for('index') }}" class="muted">Clear</a>{% endif %}
+  </form>
+
+  {% if overview.tags %}
+  <p style="margin: .9rem 0 0;">
+    {% for tag, count in overview.tags.items() %}
+      <a class="tag {{ 'active' if tag == active_tag }}" href="{{ url_for('index', tag=tag, q=query or None) }}">#{{ tag }} · {{ count }}</a>
+    {% endfor %}
+  </p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <div class="row" style="justify-content: space-between; margin-bottom: .5rem;">
+    <h2 style="margin: 0;">
+      {% if query or active_tag %}{{ notes|length }} result(s){% else %}All notes ({{ overview.total }}){% endif %}
+    </h2>
+    {% if overview.total %}
+    <form method="post" action="{{ url_for('summarize') }}">
+      {% if active_tag %}<input type="hidden" name="tag" value="{{ active_tag }}">{% endif %}
+      <button type="submit" class="secondary" id="summarize-btn">
+        Summarize{% if active_tag %} #{{ active_tag }}{% endif %}
+      </button>
+    </form>
+    {% endif %}
+  </div>
+
+  {% for note in notes %}
+  <article class="note" style="border-top: 1px solid var(--border); padding: .75rem 0;">
+    <div class="row" style="justify-content: space-between; align-items: flex-start;">
+      <div>
+        <strong>{{ note.title }}</strong>
+        {% if note.body %}<div style="white-space: pre-wrap;">{{ note.body }}</div>{% endif %}
+        <div style="margin-top: .3rem;">
+          {% for tag in note.tags %}<span class="tag">#{{ tag }}</span>{% endfor %}
+          <span class="muted" style="font-size: .8rem;">{{ note.created_at[:16].replace('T', ' ') }} UTC</span>
+        </div>
+      </div>
+      <form method="post" action="{{ url_for('delete_note', note_id=note.id) }}">
+        <button type="submit" class="secondary" aria-label="Delete {{ note.title }}">Delete</button>
+      </form>
+    </div>
+  </article>
+  {% else %}
+  <p class="muted">
+    {% if query or active_tag %}No notes match.{% else %}No notes yet — add one above, or ask the chat.{% endif %}
+  </p>
+  {% endfor %}
+</section>
+{% endblock %}

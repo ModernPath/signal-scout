@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}SignalScout Intelligence{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body><div class="shell">
+  <aside class="sidebar"><a class="brand" href="{{ url_for('index') }}">SignalScout<br><span>Intelligence</span></a>
+    <nav aria-label="Agent navigation"><a href="{{ url_for('index') }}" class="{{ 'active' if request.endpoint == 'index' else '' }}">Opportunities</a><a href="{{ url_for('index') }}#context">Company context</a><a href="{{ url_for('chat') }}" class="{{ 'active' if request.endpoint == 'chat' else '' }}">Agent chat</a></nav>
+    <div class="sidebar-note">Independent local agent<br>Drafts stay unpublished</div>
+  </aside>
+  <main id="main"><div class="flash-stack" aria-live="polite">{% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}</div>{% block content %}{% endblock %}</main>
+</div><script>document.querySelectorAll('form[data-busy]').forEach(f=>f.addEventListener('submit',()=>{const b=f.querySelector('button[type=submit]');if(b){b.disabled=true;b.textContent='Working…'}}));</script></body>
+</html>

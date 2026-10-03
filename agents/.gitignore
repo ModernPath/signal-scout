@@ -1,0 +1,11 @@
+.env
+.env.local
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+**/memory/data/*
+!**/memory/data/.gitkeep

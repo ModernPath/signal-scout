@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Chat — Example Agent{% endblock %}
+{% block head %}
+<style>
+  .messages { min-height: 50vh; max-height: 65vh; overflow-y: auto; display: flex; flex-direction: column; gap: .6rem; }
+  .bubble { max-width: 85%; padding: .6rem .9rem; border-radius: 12px; white-space: pre-wrap; }
+  .bubble.user { align-self: flex-end; background: var(--accent); color: var(--accent-text); }
+  .bubble.agent { align-self: flex-start; background: var(--bg); border: 1px solid var(--border); }
+  .bubble .meta { display: block; margin-top: .3rem; font-size: .75rem; color: var(--muted); }
+  .welcome { margin: auto; text-align: center; }
+</style>
+{% endblock %}
+{% block content %}
+<h1>Chat</h1>
+<section class="card messages" id="messages" aria-live="polite">
+  <div class="welcome muted" id="welcome">
+    <p>Try: “add Buy oat milk #shopping” · “find milk” · “list notes” · “summarize”</p>
+  </div>
+</section>
+<form class="row" id="chat-form">
+  <input id="chat-input" placeholder="Ask about your notes…" autocomplete="off" autofocus required aria-label="Message">
+  <button type="submit" id="send-btn">Send</button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const messages = document.getElementById('messages');
+  const form = document.getElementById('chat-form');
+  const input = document.getElementById('chat-input');
+  const sendBtn = document.getElementById('send-btn');
+  let history = [];
+
+  function addBubble(text, role, meta) {
+    document.getElementById('welcome')?.remove();
+    const bubble = document.createElement('div');
+    bubble.className = `bubble ${role}`;
+    bubble.textContent = text;
+    if (meta) {
+      const small = document.createElement('span');
+      small.className = 'meta';
+      small.textContent = meta;
+      bubble.appendChild(small);
+    }
+    messages.appendChild(bubble);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function setBusy(busy) {
+    input.disabled = busy;
+    sendBtn.disabled = busy;
+    sendBtn.textContent = busy ? '…' : 'Send';
+  }
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const message = input.value.trim();
+    if (!message) return;
+
+    addBubble(message, 'user');
+    input.value = '';
+    setBusy(true);
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, history }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        addBubble(data.error || 'Something went wrong.', 'agent');
+        return;
+      }
+      history = data.history;
+      const tools = data.tools_used.length ? `tools: ${data.tools_used.join(', ')}` : '';
+      const mode = data.used_llm ? 'llm' : 'offline';
+      addBubble(data.reply, 'agent', [mode, tools].filter(Boolean).join(' · '));
+    } catch (error) {
+      addBubble('Could not reach the agent. Please try again.', 'agent');
+    } finally {
+      setBusy(false);
+      input.focus();
+    }
+  });
+</script>
+{% endblock %}

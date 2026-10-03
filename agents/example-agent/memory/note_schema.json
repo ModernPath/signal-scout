@@ -1,0 +1,11 @@
+{
+  "name": "note_schema",
+  "description": "A short note saved by the user",
+  "fields": [
+    {"name": "id", "type": "string", "required": true, "description": "note_<10 hex chars>"},
+    {"name": "title", "type": "string", "required": true, "description": "One-line title, max 120 chars"},
+    {"name": "body", "type": "string", "required": false, "description": "Free-form text", "default": ""},
+    {"name": "tags", "type": "array", "items": "string", "required": false, "description": "Lowercase slugs, e.g. ['work', 'ideas']", "default": []},
+    {"name": "created_at", "type": "string", "format": "date-time", "required": true, "description": "UTC ISO-8601 timestamp"}
+  ]
+}
