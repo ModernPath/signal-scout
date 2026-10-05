@@ -230,16 +230,41 @@ def test_agent_local_settings_can_disable_semantic_processing(tmp_path,monkeypat
     assert 'UNRELATED_SECRET' not in os.environ
 
 
-def test_refinement_schema_limits_prior_claims_to_original_quotes():
+def test_refinement_selects_numbered_original_quotes_with_a_compact_schema():
+    import json
     from intelligence_provider import GeminiProvider
+    long_passage=' '.join(f'Sentence {i} explains a distinct verification practice in detail.' for i in range(60))
     class Quotes(GeminiProvider):
         def _generate(self,prompt,**kwargs):
             schema=kwargs.get('schema')
             assert schema
-            choices=schema['properties']['comparisons']['items']['properties']['prior_claim']['enum']
-            assert 'Check permissions before execution.' in choices
-            return {'candidates':[{'content':{'parts':[{'text':'{"comparisons":[],"why_us":"Expertise","angle":"Review","uncertainty":"Review"}'}]}}]}
-    Quotes('fixture').refine(dict(label='Checks',angle='Review'),{},dict(coverage=1,hits=[dict(chunk_id=7,title='Prior',passage='Check permissions before execution. Log results afterward.')]))
+            item=schema['properties']['comparisons']['items']['properties']
+            # Gemini rejects schemas that enumerate passage text; quotes are selected by number.
+            assert 'enum' not in item.get('prior_claim',{})
+            assert item['quote_id']=={'type':'INTEGER'}
+            assert len(json.dumps(schema))<1500
+            assert '"quote_id": 1' in prompt and 'Log results afterward.' in prompt
+            value=dict(comparisons=[dict(quote_id=1,verdict='different',difference='Covers logging, not permissions.')],
+                       why_us='Expertise',angle='Review',uncertainty='Review')
+            return {'candidates':[{'content':{'parts':[{'text':json.dumps(value)}]}}]}
+    result=Quotes('fixture').refine(dict(label='Checks',angle='Review'),{},dict(coverage=1,hits=[
+        dict(chunk_id=7,title='Prior',passage='Check permissions before execution. Log results afterward.'),
+        dict(chunk_id=8,title='Long',passage=long_passage)]))
+    assert result['comparisons']==[dict(chunk_id=7,verdict='different',prior_claim='Log results afterward.',
+                                        difference='Covers logging, not permissions.')]
+
+
+def test_refinement_rejects_a_quote_number_outside_the_supplied_passages():
+    import json
+    from intelligence_provider import GeminiProvider
+    class Forged(GeminiProvider):
+        def _generate(self,prompt,**kwargs):
+            value=dict(comparisons=[dict(quote_id=9,verdict='different',difference='Invented.')],
+                       why_us='Expertise',angle='Review',uncertainty='Review')
+            return {'candidates':[{'content':{'parts':[{'text':json.dumps(value)}]}}]}
+    with pytest.raises(RuntimeError,match='unsupported company passages'):
+        Forged('fixture').refine(dict(label='Checks',angle='Review'),{},dict(coverage=1,hits=[
+            dict(chunk_id=7,title='Prior',passage='Check permissions before execution.')]))
 
 
 def test_subagents_use_the_service_database_instead_of_an_unrelated_environment(monkeypatch,tmp_path):

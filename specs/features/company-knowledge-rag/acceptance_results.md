@@ -11,6 +11,13 @@
 - Main browser actions used the actual shared subagent path: queued search, refinement, X draft, editor revision and clipboard copy passed. A deletion URL regression was reproduced and fixed. Source removal is verified in API tests and browser review. Synthetic records stayed in disposable databases, not the application's workspace.
 - Current application database backup restored successfully to disposable `signalscout_restore_test`, then upgraded through `0011_chunker_versions`. Repeat migration/data-preservation tests passed. Backup is a private temporary dump; no dump or credential is committed.
 
+## Live application follow-up (2026-10-05)
+
+- Live refinement on the application workspace's project-document company context initially failed: Gemini returned HTTP 400 because the response schema enumerated every passage sentence. The earlier synthetic context was too short to expose this. Prior claims are now selected by numbered quote; two provider tests cover the compact schema and forged quote numbers.
+- After the fix: **110 application tests passed** against disposable PostgreSQL 17/pgvector; agent suite **27 passed, 20 skipped** (its database-backed tests were not run in this pass); `node tests/intelligence_ui.cjs` passed.
+- Real Gemini through the main application queue for opportunity #49 (`cloudflare/agents`): refinement job #9, LinkedIn draft job #10 and X draft job #11 all completed, saving enrichment #1 and drafts #1–#2 with six research citations each. This run was API-driven; no new browser pass was made.
+- Editorial quality remains unapproved. In this run all three comparisons cited one architecture chunk, and one selected "prior claim" was a section heading rather than an argument; the drafts restate the research without a distinct company angle.
+
 ## Contract coverage
 
 | Criterion | Result | Evidence / limitation |
