@@ -15,3 +15,6 @@ __pycache__/
 *.sqlite3
 **/memory/data/*
 !**/memory/data/.gitkeep
+
+# Raw assistant session exports
+codex-session-*.md
