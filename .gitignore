@@ -17,4 +17,3 @@ __pycache__/
 !**/memory/data/.gitkeep
 
 # Raw assistant session exports
-codex-session-*.md
