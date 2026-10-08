@@ -7,9 +7,20 @@ The [agent workflow](AGENTS.md) explains how to adapt and verify those parts.
 
 `gemini_agent.py` is a separate optional model-client example.
 
-[`signal-intelligence/`](signal-intelligence/) is the standalone Phase 2 SignalScout
-agent. It uses the application's PostgreSQL database and application-owned
-migrations. See its README for setup, commands, and current acceptance gaps.
+Two teaching additions build on the same notes agent:
+
+- [`example-agent/evals/`](example-agent/evals/README.md) measures the agent:
+  22 cases with expected evidence, a runner with repeated trials, exact
+  graders, an LLM judge with calibration against your own labels, and a model
+  comparison on quality, cost and p90 latency.
+- [`secure-agent/`](secure-agent/README.md) is the agent hardened:
+  a threat model, per-user access with tests, no delete tool for the model,
+  tool and spend limits, and human approval for deletions. Compare it with
+  `example-agent/` file by file.
+
+[`signal-intelligence/`](https://github.com/ModernPath/signal-scout/tree/main/agents/signal-intelligence) is the standalone Phase 2 SignalScout
+agent, kept in the SignalScout repository. It uses the application's PostgreSQL database and
+application-owned migrations. See its README for setup, commands, and current acceptance gaps.
 
 ## Try the full example
 

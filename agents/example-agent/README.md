@@ -31,7 +31,8 @@ example-agent/
 ├── skills/                 # Markdown loaded into the system prompt
 ├── api/main.py             # FastAPI REST API   (port 8012)
 ├── ui/app.py               # Flask web UI       (port 5012)
-└── tests/                  # pytest: core, memory, service, chat, API, UI, CLIs, browser
+├── evals/                  # Eval set: cases, runner, rubrics, LLM judge, results (see evals/README.md)
+└── tests/                  # pytest: core, memory, service, chat, API, UI, CLIs, browser, eval harness
 ```
 
 ### How the layers connect

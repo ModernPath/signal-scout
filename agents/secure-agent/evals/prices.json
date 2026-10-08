@@ -1,0 +1,11 @@
+{
+  "currency": "USD",
+  "unit": "per million tokens, paid tier, output includes thinking",
+  "source": "https://ai.google.dev/gemini-api/docs/pricing",
+  "checked_on": "2026-10-07",
+  "models": {
+    "gemini-3.8-flash": {"input_per_million": 0.75, "output_per_million": 3.75, "note": "promotional through 2026-12-31; $1.50 / $7.50 from 2027-01-01"},
+    "gemini-3.5-flash-lite": {"input_per_million": 0.30, "output_per_million": 2.50},
+    "gemini-3.1-pro-preview": {"input_per_million": 2.00, "output_per_million": 12.00, "note": "prompts up to 200k tokens; used as the judge"}
+  }
+}
