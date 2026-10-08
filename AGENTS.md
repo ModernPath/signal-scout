@@ -28,3 +28,7 @@ After implementing a feature with the spec-driven and test-driven workflows, use
 
 Compare the result with the PRD, architecture, and relevant feature's `task_spec.md`, `technical_spec.md`, and `test_plan.md`. Report completed behavior, verification performed, and any unmet or unverified acceptance criteria. Update the appropriate root or feature document when implementation changes an agreed decision.
 
+
+## Agent factory
+
+To add a new agent under `agents/`, write a brief in `factory/briefs/` and run `bash factory/run.sh <brief>` from the root; see `factory/README.md`. Do not edit `factory/` from inside a factory run.

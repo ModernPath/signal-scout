@@ -17,3 +17,6 @@ __pycache__/
 !**/memory/data/.gitkeep
 
 # Raw assistant session exports
+
+# Agent factory run state (local)
+factory/runs/

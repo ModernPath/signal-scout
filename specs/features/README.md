@@ -12,5 +12,6 @@ The product-wide [Phase 1 PRD](../phase-1-prd.md), [architecture specification](
 
 | Intelligence application UI | [Task](intelligence-ui/task_spec.md) | [Technical](intelligence-ui/technical_spec.md) | [Test plan](intelligence-ui/test_plan.md) | [Results](intelligence-ui/acceptance_results.md) |
 | Company knowledge RAG | [Task](company-knowledge-rag/task_spec.md) | [Technical](company-knowledge-rag/technical_spec.md) | [Test plan](company-knowledge-rag/test_plan.md) | [Results](company-knowledge-rag/acceptance_results.md) |
+| Agent factory | [Task](agent-factory/task_spec.md) | [Technical](agent-factory/technical_spec.md) | [Test plan](agent-factory/test_plan.md) | — |
 
 - [Agent workspace](agent-workspace/task_spec.md): conversational main UI, persisted actual activity and shared intelligence tools.
